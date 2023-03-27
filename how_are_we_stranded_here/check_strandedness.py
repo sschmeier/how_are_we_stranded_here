@@ -7,6 +7,7 @@ import sys
 import subprocess
 import binascii
 import re
+import pathlib
 from statistics import median
 from statistics import stdev
 
@@ -22,6 +23,7 @@ def main():
     parser.add_argument('-r2', '--reads_2', type=str, help='fastq.gz file (R2)')
     parser.add_argument('-k', '--kallisto_index', type=str, help='name of kallisto index (will build under this name if file not found)', default = 'kallisto_index')
     parser.add_argument('-p', '--print_commands', action='store_true', help='Print bash commands as they occur?')
+    parser.add_argument('--direc', type=str, default=None, help='Use this directory for results.')
 
     args = parser.parse_args()
     reads_1 = args.reads_1
@@ -31,6 +33,7 @@ def main():
     gtf = args.gtf
     fasta = args.transcripts
     print_cmds = args.print_commands
+    test_folder = args.direc
 
     if fasta is None and (kallisto_index_name is None or not os.path.exists(kallisto_index_name)):
         sys.exit('transcript .fasta sequences are required to generate the kallisto index. Please supply with --transcripts')
@@ -88,17 +91,18 @@ def main():
         single_strand = False
 
     # make a test_folder
-    test_folder = 'stranded_test_' + os.path.basename(reads_1).replace('.fastq' ,'').replace('.fq' ,'').replace('.gz' ,'')
+    if not test_folder:
+        test_folder = 'stranded_test_' + os.path.basename(reads_1).replace('.fastq' ,'').replace('.fq' ,'').replace('.gz' ,'')
     if not os.path.isdir(test_folder):
-        # make directory
-        os.mkdir(test_folder)
+        # make directory, including subdirs
+        pathlib.Path(test_folder).mkdir(parents=True, exist_ok=True)
     else:
         index_n = 1
         while os.path.isdir(test_folder + '_' + str(index_n)):
             index_n = index_n + 1
         #make directory
         test_folder = test_folder + '_' + str(index_n)
-        os.mkdir(test_folder)
+        pathlib.Path(test_folder).mkdir(parents=True, exist_ok=True)
     print("Results stored in: " + test_folder)
 
     # convert gff to gtf if required
