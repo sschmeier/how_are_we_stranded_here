@@ -213,7 +213,6 @@ def main():
         print('running command: ' + cmd)
     subprocess.call(cmd, shell=True)
 
-    result = pd.read_csv(test_folder + '/' + 'strandedness_check.txt', sep="\r\n", header=None, engine='python')
     with open(test_folder + '/' + 'strandedness_check.txt', 'r') as f:
         # reading non-empty lines of the file
         result = list(filter(None, (line.rstrip() for line in f)))
